@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anthost - Hospedagem de Jogos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121214;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #202024;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        h1 {
+            color: #4ea8de;
+            margin-bottom: 5px;
+        }
+
+        p {
+            color: #a8a8b3;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e1e1e6;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: #121214;
+            border: 2px solid #29292e;
+            border-radius: 6px;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4ea8de;
+            outline: none;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            display: block;
+            padding: 15px;
+            background: #29292e;
+            border: 2px dashed #4ea8de;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        .file-label:hover {
+            background: #323238;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #4ea8de;
+            color: #121214;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #4895ef;
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 15px;
+            background: #121214;
+            border-radius: 6px;
+            display: none;
+            border: 1px solid #29292e;
+        }
+
+        .link-gerado {
+            color: #4ea8de;
+            word-break: break-all;
+            font-family: monospace;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Container do Jogo em Tela Cheia */
+        #game-container {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #000;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-panel" class="container">
+        <h1>Anthost 🚀</h1>
+        <p>Hospede seu jogo HTML de um jeito fácil e rápido!</p>
+
+        <div class="form-group">
+            <label for="game-name">Nome do Anthost Pages:</label>
+            <input type="text" id="game-name" placeholder="Ex: meu-jogo-massa">
+        </div>
+
+        <div class="form-group">
+            <label>Selecione o arquivo do jogo (qualquer nome .html):</label>
+            <label for="game-file" class="file-label" id="file-status">
+                📁 Clique para escolher o arquivo.html
+            </label>
+            <input type="file" id="game-file" accept=".html">
+        </div>
+
+        <button onclick="gerarLink()">Terminar e Gerar Link</button>
+
+        <div id="result" class="result-box">
+            <p style="color: #04d361; font-weight: bold;">🎉 Site publicado com sucesso!</p>
+            <span id="link-url" class="link-gerado"></span>
+            <button onclick="copiarLink()" style="background: #29292e; color: white;">Copiar Link</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <iframe id="game-frame"></iframe>
+    </div>
+
+    <script>
+        let codigoJogo = "";
+        const fileInput = document.getElementById('game-file');
+        const fileStatus = document.getElementById('file-status');
+
+        // Escuta o upload do arquivo HTML
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                fileStatus.innerText = `✅ Arquivo carregado: ${file.name}`;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    codigoJogo = e.target.result; // Armazena o código do jogo
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Gera a URL no padrão profissional: ?jogo=nome-do-jogo
+        function gerarLink() {
+            const nomeJogo = document.getElementById('game-name').value.trim().replace(/\s+/g, '-').toLowerCase();
+            
+            if (!nomeJogo || !codigoJogo) {
+                alert("Por favor, preencha o nome e envie o arquivo .html!");
+                return;
+            }
+
+            // Salva temporariamente no LocalStorage para os testes simulados
+            localStorage.setItem(`anthost_jogo_${nomeJogo}`, codigoJogo);
+
+            // Detecta automaticamente a URL atual do GitHub Pages
+            const urlBase = window.location.href.split('?')[0];
+            const linkFinal = `${urlBase}?jogo=${nomeJogo}`;
+
+            document.getElementById('link-url').innerText = linkFinal;
+            document.getElementById('result').style.display = 'block';
+        }
+
+        function copiarLink() {
+            const linkText = document.getElementById('link-url').innerText;
+            navigator.clipboard.writeText(linkText);
+            alert("Link copiado!");
+        }
+
+        // ROTEADOR: Faz a leitura automática da URL ao carregar a página
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const jogoParaCarregar = urlParams.get('jogo');
+
+            if (jogoParaCarregar) {
+                const jogoSalvo = localStorage.getItem(`anthost_jogo_${jogoParaCarregar}`);
+
+                if (jogoSalvo) {
+                    // Oculta o painel do Anthost e abre o jogo em tela cheia
+                    document.getElementById('main-panel').style.display = 'none';
+                    document.getElementById('game-container').style.display = 'block';
+                    
+                    const frame = document.getElementById('game-frame');
+                    frame.contentWindow.document.open();
+                    frame.contentWindow.document.write(jogoSalvo);
+                    frame.contentWindow.document.close();
+                    
+                    document.title = `Anthost Player: ${jogoParaCarregar}`;
+                } else {
+                    alert("Jogo não encontrado no Anthost!");
+                }
+            }
+        };
+    </script>
+</body>
+</html>
